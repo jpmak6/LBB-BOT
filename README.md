@@ -1,53 +1,78 @@
-# 🤖 Bot Discord LBB
+# 🤖 Bot Discord LBB - V2 Complète
 
-Bot Discord professionnel avec système de bienvenue, commandes d'administration et gestion d'erreurs.
+Bot Discord ultra-simple et professionnel pour PME de 80 personnes avec système de tickets avancé, panel admin et hébergement 24/7.
 
-## 🚀 Fonctionnalités
+## ✨ Fonctionnalités V2
 
-- ✅ Messages de bienvenue avec embeds élégants
-- 📊 Commandes d'information (serveur, utilisateur, bot)
-- 🛡️ Gestion des erreurs complète
-- 📝 Système de logging
-- 🎨 Embeds Discord professionnels
-- 🧹 Commande de modération (clear)
-- 🏓 Vérification de latence
+### 🎫 **Système de Tickets Avancé**
+- 2 panneaux séparés : **Demandes/Problèmes** et **Maintenances**
+- Workflow complet : Fermer → Confirmation → Transcrire/Réouvrir/Supprimer
+- Transcripts automatiques avec historique complet
+- Boutons persistants (fonctionnent après redémarrage)
+
+### 🔐 **Panel Admin Ultra-Sécurisé**
+- Whitelist stricte par ID Discord
+- 6 fonctions : Sondage, Kick, Ban, Timeout, Clear, Panneaux tickets
+- Interface intuitive avec boutons
+
+### 📊 **Communication**
+- Système de sondages avec réactions automatiques
+- Modération complète (kick, ban, timeout)
+
+### 🌐 **Hébergement 24/7**
+- Compatible Replit + UptimeRobot
+- Serveur Flask intégré pour keep-alive
+- 4 endpoints : `/`, `/ping`, `/status`, `/health`
+
+---
 
 ## 📋 Commandes disponibles
 
-### Informations
-- `!aide` / `!help` - Menu d'aide
-- `!regles` / `!rules` - Règles du serveur
-- `!ping` - Latence du bot
-- `!info` - Informations sur le bot
+### Tickets
+- `!setup_demande` - Créer le panneau Demandes/Problèmes
+- `!setup_maintenance` - Créer le panneau Maintenance
 
-### Serveur
-- `!serveurinfo` / `!si` - Informations du serveur
-- `!userinfo [@user]` - Informations d'un membre
+### Admin (Whitelist uniquement)
+- `!panel_admin` - Afficher le panel admin complet
+- `!pollcreate` - Créer un sondage (admin)
 
 ### Modération
-- `!clear [nombre]` - Supprimer des messages (admin)
+- Via panel admin (boutons interactifs)
 
-## 🛠️ Installation locale
+---
 
-### Prérequis
-- Python 3.11+
-- pip
+## 🚀 Installation & Hébergement
 
-### Étapes
+### 📖 **Guide complet Replit + UptimeRobot**
+👉 **Lis le guide détaillé** : [`HEBERGEMENT_REPLIT.md`](HEBERGEMENT_REPLIT.md)
+
+### ⚡ **Installation rapide (local)**
 
 1. **Cloner le projet**
 ```bash
-git clone <votre-repo>
+git clone https://github.com/jpmak6/LBB-BOT.git
 cd "LBB BOT"
 ```
 
-2. **Créer un environnement virtuel**
+2. **Installer les dépendances**
 ```bash
-python -m venv venv
+pip install -r requirements.txt
 ```
 
-3. **Activer l'environnement**
-- Windows:
+3. **Configurer le token**
+Crée un fichier `.env` :
+```env
+DISCORD_TOKEN=ton_token_discord_ici
+```
+
+4. **Lancer le bot**
+```bash
+python bot.py
+```
+
+---
+
+## 🌐 Hébergement Replit (Gratuit 24/7)
 ```bash
 venv\Scripts\activate
 ```

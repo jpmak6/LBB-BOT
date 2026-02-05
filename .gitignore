@@ -7,6 +7,9 @@
 *.log
 bot.log
 
+# Transcripts (ne pas versionner les fichiers de conversation)
+transcripts/*.txt
+
 # Python
 __pycache__/
 *.py[cod]
@@ -48,4 +51,12 @@ Thumbs.db
 
 # Backup files
 *.bak
+
+# Replit specific (ne pas versionner les fichiers Replit locaux)
+.replit_config
+.upm/
+.cache/
+.config/
+poetry.lock
+pyproject.toml
 *.tmp

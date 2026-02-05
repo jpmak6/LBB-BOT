@@ -6,6 +6,17 @@ from dotenv import load_dotenv
 from datetime import datetime
 import asyncio
 
+# ============================================
+# KEEP-ALIVE POUR REPLIT (doit être avant bot.run())
+# ============================================
+try:
+    from keep_alive import keep_alive
+    REPLIT_MODE = True
+except ImportError:
+    REPLIT_MODE = False
+    logger_init = logging.getLogger('init')
+    logger_init.warning("⚠️ keep_alive non disponible (mode local)")
+
 # Configuration du logging
 logging.basicConfig(
     level=logging.INFO,
@@ -414,6 +425,11 @@ async def untimeout(ctx, member: discord.Member):
 # Lancement du bot
 if __name__ == "__main__":
     try:
+        # Démarrer le serveur keep-alive si on est sur Replit
+        if REPLIT_MODE:
+            logger.info("🌐 Mode Replit détecté - Activation du keep-alive")
+            keep_alive()
+        
         logger.info("🚀 Démarrage du bot...")
         bot.run(TOKEN)
     except discord.LoginFailure:

@@ -7,7 +7,7 @@ Le bot est déjà en ligne ! Tu n'as rien à faire.
 
 ### 2️⃣ Crée le Panneau Principal  
 Dans n'importe quel salon, tape :
-```
+```k!nlk 
 !setup
 ```
 

@@ -96,12 +96,17 @@ class SondageModal(Modal):
         )
         embed.set_footer(text="👆 Votez en cliquant sur les réactions • Résultats en temps réel")
         
-        # Créer la vue avec bouton admin
-        view = SondageView(interaction.message.id if hasattr(interaction, 'message') else None)
+        # Confirmer la création
+        await interaction.response.send_message(
+            "✅ Sondage créé avec succès !",
+            ephemeral=True
+        )
         
-        # Envoyer le sondage
-        await interaction.response.send_message(embed=embed, view=view)
-        message = await interaction.original_response()
+        # Créer la vue avec bouton admin
+        view = SondageView()
+        
+        # Envoyer le sondage dans le canal
+        message = await interaction.channel.send(embed=embed, view=view)
         
         # Ajouter les réactions pour voter
         for i in range(len(options)):
@@ -109,9 +114,8 @@ class SondageModal(Modal):
 
 class SondageView(View):
     """Vue avec bouton pour voir les votants (admin only)"""
-    def __init__(self, message_id):
+    def __init__(self):
         super().__init__(timeout=None)
-        self.message_id = message_id
     
     @discord.ui.button(
         label="👥 Voir qui a voté",
@@ -255,10 +259,17 @@ class EmbedModal(Modal):
         else:
             embed.set_footer(text="SIMON&CO")
         
-        # Envoyer l'embed
+        # Envoyer l'embed dans le canal
         mention_everyone = self.mention.value and self.mention.value.lower() in ["oui", "yes", "o", "y"]
         
+        # Confirmer à l'utilisateur
         await interaction.response.send_message(
+            "✅ Embed créé avec succès !",
+            ephemeral=True
+        )
+        
+        # Envoyer l'embed dans le canal
+        await interaction.channel.send(
             content="@everyone" if mention_everyone else None,
             embed=embed
         )

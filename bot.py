@@ -73,15 +73,15 @@ async def on_ready():
     await bot.change_presence(
         activity=discord.Activity(
             type=discord.ActivityType.watching,
-            name="!aide pour les commandes"
+            name="SIMON&CO - V3.1"
         )
     )
     
-    logger.info("🎉 Bot prêt et opérationnel!")
+    logger.info("🎉 Bot prêt et opérationnel! (V3.1)")
 
 async def load_extensions():
     """Charger tous les modules (cogs)"""
-    cogs = ['simple', 'tickets', 'embeds', 'polls']
+    cogs = ['simple', 'tickets', 'embeds', 'polls', 'v3_admin']  # Ajout du module V3.1
     
     for cog in cogs:
         try:
@@ -142,110 +142,22 @@ async def on_command_error(ctx, error):
     else:
         logger.error(f"❌ Erreur non gérée: {error}", exc_info=error)
         await ctx.send("❌ Une erreur est survenue lors de l'exécution de la commande.")
+# ============================================
+# COMMANDES D'AIDE DÉSACTIVÉES EN V3.1
+# ============================================
+# Les commandes !aide, !help sont désactivées
+# Utiliser !panel_admin pour accéder aux fonctions admin
+# Utiliser !sondage et !embed (admins uniquement)
 
-@bot.command(name="aide", aliases=["help", "h"])
-async def aide(ctx):
-    """Affiche toutes les commandes disponibles"""
-    embed = discord.Embed(
-        title="📚 Guide du Bot - Version PME Simplifiée",
-        description=(
-            "**🎛️ PANNEAU PRINCIPAL (Le plus simple !)**\n"
-            "`!setup` - Créer le panneau interactif avec tous les boutons\n"
-            "→ *1 clic = 1 action, plus besoin de commandes !*\n\n"
-            "---\n\n"
-            "**🚀 ACCÈS RAPIDE (Pour Tous)**"
-        ),
-        color=discord.Color.blue(),
-        timestamp=datetime.now()
-    )
-    
-    embed.add_field(
-        name="🎫 Tickets (Tout le monde)",
-        value=(
-            "**Via le panneau** : Clique sur 🎫\n"
-            "**Via commande** : `!ticket`\n"
-            "→ Ouvre un ticket privé instantanément"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="📊 Sondages (Tout le monde)",
-        value=(
-            "**Via le panneau** : Clique sur 📊\n"
-            "**Via commandes** :\n"
-            "• `!poll 60 \"Question?\" \"Option1\" \"Option2\"`\n"
-            "• `!quickpoll Question simple?` (Oui/Non)\n"
-            "→ Crée un sondage en 2 secondes"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="📝 Annonces (Tout le monde)",
-        value=(
-            "**Via le panneau** : Clique sur 📝\n"
-            "**Via commande** : `!announcement Message`\n"
-            "→ Annonce stylisée automatique"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="📌 Informations",
-        value=(
-            "`!ping` - Latence du bot\n"
-            "`!info` - Infos du bot\n"
-            "`!serveurinfo` - Stats du serveur\n"
-            "`!userinfo [@user]` - Infos d'un membre"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="🛡️ Modération (Staff uniquement)",
-        value=(
-            "`!clear <nombre>` - Supprimer messages\n"
-            "`!kick @user raison` - Expulser\n"
-            "`!ban @user raison` - Bannir\n"
-            "`!timeout @user <durée> <unité>` - Timeout\n"
-            "→ *Unités: s, m, h, d*"
-        ),
-        inline=False
-    )
-    
-    embed.add_field(
-        name="💡 CONSEIL POUR DÉMARRER",
-        value=(
-            "**1.** Tape `!setup` dans un salon\n"
-            "**2.** Le panneau apparaît avec des boutons\n"
-            "**3.** Tout le monde peut cliquer et utiliser !\n\n"
-            "✨ *C'est aussi simple que ça !*"
-        ),
-        inline=False
-    )
-    
-    embed.set_footer(text=f"Bot simplifié pour PME • Demandé par {ctx.author.name}", 
-                    icon_url=ctx.author.display_avatar.url)
-    await ctx.send(embed=embed)
+# @bot.command(name="aide", aliases=["help", "h"])
+# async def aide(ctx):
+#     """DÉSACTIVÉ en V3.1"""
+#     pass
 
-@bot.command(name="regles", aliases=["règles", "rules"])
-async def regles(ctx):
-    """Affiche les règles du serveur"""
-    embed = discord.Embed(
-        title="📜 Règles du serveur",
-        description="Merci de respecter ces règles pour une bonne ambiance !",
-        color=discord.Color.gold(),
-        timestamp=datetime.now()
-    )
-    
-    embed.add_field(name="1️⃣ Respect", value="Respectez tous les membres du serveur", inline=False)
-    embed.add_field(name="2️⃣ Pas de spam", value="Ne spammez pas les salons", inline=False)
-    embed.add_field(name="3️⃣ Contenu approprié", value="Pas de contenu NSFW, illégal ou offensant", inline=False)
-    embed.add_field(name="4️⃣ Pas de pub", value="Pas de publicité sans permission", inline=False)
-    embed.set_footer(text="En cas de non-respect, des sanctions seront appliquées")
-    
-    await ctx.send(embed=embed)
+# @bot.command(name="regles", aliases=["règles", "rules"])
+# async def regles(ctx):
+#     """DÉSACTIVÉ en V3.1"""
+#     pass
 
 @bot.command(name="ping")
 async def ping(ctx):

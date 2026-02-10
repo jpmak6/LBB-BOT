@@ -382,4 +382,4 @@ class AdminV3(commands.Cog):
 async def setup(bot):
     await bot.add_cog(AdminV3(bot))
     # Enregistrer la vue persistante pour les sondages
-    bot.add_view(SondageView(None))
+    bot.add_view(SondageView())

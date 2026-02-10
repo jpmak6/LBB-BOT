@@ -81,7 +81,7 @@ async def on_ready():
 
 async def load_extensions():
     """Charger tous les modules (cogs)"""
-    cogs = ['simple', 'tickets', 'embeds', 'polls', 'v3_admin']  # Ajout du module V3.1
+    cogs = ['simple', 'tickets', 'v3_admin']  # V3.1 - Nettoyé (embeds & polls obsolètes)
     
     for cog in cogs:
         try:

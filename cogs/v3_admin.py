@@ -129,18 +129,30 @@ class SondageView(View):
             return
         
         # Récupérer le message du sondage
-        message = interaction.message
+        try:
+            message = await interaction.channel.fetch_message(interaction.message.id)
+        except:
+            await interaction.response.send_message(
+                "❌ Impossible de récupérer les votes. Le message est peut-être trop ancien.",
+                ephemeral=True
+            )
+            return
         
         # Analyser les réactions
         votants_text = "**👥 LISTE DES VOTANTS**\n\n"
+        total_votes = 0
         
         for reaction in message.reactions:
             if str(reaction.emoji) in ["🅰️", "🅱️", "🅲", "🅳"]:
                 users = [user async for user in reaction.users() if not user.bot]
                 if users:
+                    total_votes += len(users)
                     votants_text += f"{reaction.emoji} **({len(users)} votes)**\n"
                     votants_text += "\n".join([f"  • {user.mention}" for user in users])
                     votants_text += "\n\n"
+        
+        if total_votes == 0:
+            votants_text += "_Aucun vote pour le moment._"
         
         # Créer l'embed des résultats détaillés
         embed = discord.Embed(
@@ -149,7 +161,7 @@ class SondageView(View):
             color=discord.Color.gold(),
             timestamp=datetime.now()
         )
-        embed.set_footer(text="🔒 Visible uniquement par les administrateurs SIMON&CO")
+        embed.set_footer(text=f"🔒 Admin uniquement • Total: {total_votes} votes")
         
         await interaction.response.send_message(embed=embed, ephemeral=True)
 

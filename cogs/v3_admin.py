@@ -305,7 +305,7 @@ class EmbedModal(Modal):
         super().__init__(title="✨ Créer un Embed Personnalisé")
         
         self.titre = TextInput(
-            label="📌 Titre de l'embed",
+            label="📌 Titre",
             placeholder="Exemple : Annonce Importante",
             style=discord.TextStyle.short,
             required=True,
@@ -314,69 +314,60 @@ class EmbedModal(Modal):
         self.add_item(self.titre)
         
         self.description = TextInput(
-            label="📝 Description / Message",
+            label="📝 Message",
             placeholder="Ton message ici...",
             style=discord.TextStyle.paragraph,
             required=True,
-            max_length=4000
+            max_length=2000
         )
         self.add_item(self.description)
         
         self.couleur = TextInput(
-            label="🎨 Couleur (bleu/rouge/vert/jaune/violet/orange/rose)",
+            label="🎨 Couleur (bleu/rouge/vert/jaune/violet)",
             placeholder="bleu",
             style=discord.TextStyle.short,
             required=False,
             max_length=20
         )
         self.add_item(self.couleur)
-        
-        self.image_url = TextInput(
-            label="🖼️ URL Image (optionnel)",
-            placeholder="https://...",
-            style=discord.TextStyle.short,
-            required=False,
-            max_length=500
-        )
-        self.add_item(self.image_url)
     
     async def on_submit(self, interaction: discord.Interaction):
-        # Couleurs disponibles
-        couleurs = {
-            "bleu": discord.Color.blue(),
-            "rouge": discord.Color.red(),
-            "vert": discord.Color.green(),
-            "jaune": discord.Color.gold(),
-            "violet": discord.Color.purple(),
-            "orange": discord.Color.orange(),
-            "rose": discord.Color.magenta(),
-        }
-        
-        couleur = couleurs.get(self.couleur.value.lower().strip() if self.couleur.value else "", discord.Color.blue())
-        
-        # Créer l'embed
-        embed = discord.Embed(
-            title=self.titre.value,
-            description=self.description.value,
-            color=couleur,
-            timestamp=datetime.now()
-        )
-        
-        embed.set_author(
-            name=interaction.user.display_name,
-            icon_url=interaction.user.display_avatar.url
-        )
-        
-        if self.image_url.value:
-            try:
-                embed.set_image(url=self.image_url.value)
-            except:
-                pass
-        
-        embed.set_footer(text="SIMON&CO")
-        
-        await interaction.response.send_message("✅ Embed créé !", ephemeral=True)
-        await interaction.channel.send(embed=embed)
+        try:
+            # Couleurs disponibles
+            couleurs = {
+                "bleu": discord.Color.blue(),
+                "rouge": discord.Color.red(),
+                "vert": discord.Color.green(),
+                "jaune": discord.Color.gold(),
+                "violet": discord.Color.purple(),
+                "orange": discord.Color.orange(),
+            }
+            
+            couleur = couleurs.get(
+                self.couleur.value.lower().strip() if self.couleur.value else "bleu", 
+                discord.Color.blue()
+            )
+            
+            # Créer l'embed
+            embed = discord.Embed(
+                title=self.titre.value,
+                description=self.description.value,
+                color=couleur,
+                timestamp=datetime.now()
+            )
+            
+            embed.set_footer(text=f"Par {interaction.user.display_name} • SIMON&CO")
+            
+            # Confirmer
+            await interaction.response.send_message("✅ Embed créé !", ephemeral=True)
+            
+            # Envoyer l'embed
+            await interaction.channel.send(embed=embed)
+            logger.info(f"✅ Embed créé par {interaction.user.name}")
+            
+        except Exception as e:
+            logger.error(f"❌ Erreur embed: {e}")
+            await interaction.response.send_message(f"❌ Erreur: {e}", ephemeral=True)
 
 class AnnonceModal(Modal):
     """Modal pour annonce rapide"""
@@ -402,21 +393,26 @@ class AnnonceModal(Modal):
         self.add_item(self.mention)
     
     async def on_submit(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title="📢 ANNONCE",
-            description=self.message.value,
-            color=discord.Color.blue(),
-            timestamp=datetime.now()
-        )
-        embed.set_footer(text=f"Par {interaction.user.display_name}")
-        
-        mention = self.mention.value and self.mention.value.lower() in ["oui", "yes", "o", "y"]
-        
-        await interaction.response.send_message("✅ Annonce publiée !", ephemeral=True)
-        await interaction.channel.send(
-            content="@everyone" if mention else None,
-            embed=embed
-        )
+        try:
+            embed = discord.Embed(
+                title="📢 ANNONCE",
+                description=self.message.value,
+                color=discord.Color.blue(),
+                timestamp=datetime.now()
+            )
+            embed.set_footer(text=f"Par {interaction.user.display_name}")
+            
+            mention = self.mention.value and self.mention.value.lower() in ["oui", "yes", "o", "y"]
+            
+            await interaction.response.send_message("✅ Annonce publiée !", ephemeral=True)
+            await interaction.channel.send(
+                content="@everyone" if mention else None,
+                embed=embed
+            )
+            logger.info(f"✅ Annonce créée par {interaction.user.name}")
+        except Exception as e:
+            logger.error(f"❌ Erreur annonce: {e}")
+            await interaction.response.send_message(f"❌ Erreur: {e}", ephemeral=True)
 
 class InfoModal(Modal):
     """Modal pour info/rappel"""
@@ -437,21 +433,21 @@ class InfoModal(Modal):
             placeholder="Ton information...",
             style=discord.TextStyle.paragraph,
             required=True,
-            max_length=2000
-        )
-        self.add_item(self.message)
-    
-    async def on_submit(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title=f"ℹ️ {self.titre.value}",
-            description=self.message.value,
-            color=discord.Color.blue(),
-            timestamp=datetime.now()
-        )
-        embed.set_footer(text="SIMON&CO")
-        
-        await interaction.response.send_message("✅ Info publiée !", ephemeral=True)
-        await interaction.channel.send(embed=embed)
+        try:
+            embed = discord.Embed(
+                title=f"ℹ️ {self.titre.value}",
+                description=self.message.value,
+                color=discord.Color.blue(),
+                timestamp=datetime.now()
+            )
+            embed.set_footer(text="SIMON&CO")
+            
+            await interaction.response.send_message("✅ Info publiée !", ephemeral=True)
+            await interaction.channel.send(embed=embed)
+            logger.info(f"✅ Info créée par {interaction.user.name}")
+        except Exception as e:
+            logger.error(f"❌ Erreur info: {e}")
+            await interaction.response.send_message(f"❌ Erreur: {e}", ephemeral=True)
 
 class AlerteModal(Modal):
     """Modal pour alerte urgente"""
@@ -477,11 +473,21 @@ class AlerteModal(Modal):
         self.add_item(self.message)
     
     async def on_submit(self, interaction: discord.Interaction):
-        embed = discord.Embed(
-            title=f"🚨 {self.titre.value}",
-            description=self.message.value,
-            color=discord.Color.red(),
-            timestamp=datetime.now()
+        try:
+            embed = discord.Embed(
+                title=f"🚨 {self.titre.value}",
+                description=self.message.value,
+                color=discord.Color.red(),
+                timestamp=datetime.now()
+            )
+            embed.set_footer(text="⚠️ Alerte SIMON&CO")
+            
+            await interaction.response.send_message("✅ Alerte envoyée !", ephemeral=True)
+            await interaction.channel.send(content="@everyone", embed=embed)
+            logger.info(f"✅ Alerte créée par {interaction.user.name}")
+        except Exception as e:
+            logger.error(f"❌ Erreur alerte: {e}")
+            await interaction.response.send_message(f"❌ Erreur: {e}", ephemeral=True
         )
         embed.set_footer(text="⚠️ Alerte SIMON&CO")
         

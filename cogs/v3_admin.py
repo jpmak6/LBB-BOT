@@ -20,11 +20,11 @@ def est_admin(user_id: int) -> bool:
     return user_id in ADMINS_AUTORISES
 
 # ============================================
-# SONDAGE V3.1 - AVEC DURÉE AUTO-SUPPRESSION
+# SONDAGE V3.1 - SIMPLE ET FONCTIONNEL
 # ============================================
 
 class SondageModal(Modal):
-    """Modal pour créer un sondage professionnel avec durée"""
+    """Modal pour créer un sondage (MAX 5 champs Discord)"""
     def __init__(self):
         super().__init__(title="📊 Créer un Sondage")
         
@@ -36,15 +36,6 @@ class SondageModal(Modal):
             max_length=200
         )
         self.add_item(self.question)
-        
-        self.duree = TextInput(
-            label="⏱️ Durée du sondage (en minutes)",
-            placeholder="Exemple : 60 (laisse vide pour illimité)",
-            style=discord.TextStyle.short,
-            required=False,
-            max_length=5
-        )
-        self.add_item(self.duree)
         
         self.option1 = TextInput(
             label="🅰️ Option 1",
@@ -65,30 +56,29 @@ class SondageModal(Modal):
         self.add_item(self.option2)
         
         self.option3 = TextInput(
-            label="🅲 Option 3 (Optionnelle)",
-            placeholder="Exemple : Chocolat chaud",
+            label="🅲 Option 3 (Optionnel)",
+            placeholder="Laisser vide si pas besoin",
             style=discord.TextStyle.short,
             required=False,
             max_length=80
         )
         self.add_item(self.option3)
         
-        self.option4 = TextInput(
-            label="🅳 Option 4 (Optionnelle)",
-            placeholder="Exemple : Aucun",
+        self.duree = TextInput(
+            label="⏱️ Durée en minutes (vide = illimité)",
+            placeholder="Ex: 60 pour 1h",
             style=discord.TextStyle.short,
             required=False,
-            max_length=80
+            max_length=5
         )
-        self.add_item(self.option4)
+        self.add_item(self.duree)
+        
     
     async def on_submit(self, interaction: discord.Interaction):
-        # Créer les options
+        # Créer les options (max 3 pour respecter limite Discord)
         options = [self.option1.value, self.option2.value]
         if self.option3.value:
             options.append(self.option3.value)
-        if self.option4.value:
-            options.append(self.option4.value)
         
         # Gérer la durée
         duree_minutes = None
@@ -103,13 +93,13 @@ class SondageModal(Modal):
                     return
             except ValueError:
                 await interaction.response.send_message(
-                    "❌ Durée invalide. Entre un nombre de minutes.",
+                    "❌ Durée invalide. Entre un nombre entier.",
                     ephemeral=True
                 )
                 return
         
         # Emojis pour les votes
-        emojis = ["🅰️", "🅱️", "🅲", "🅳"]
+        emojis = ["🅰️", "🅱️", "🅲"]
         
         # Footer avec durée
         footer_text = "👆 Votez en cliquant sur les réactions"
@@ -126,24 +116,24 @@ class SondageModal(Modal):
             timestamp=datetime.now()
         )
         embed.set_author(
-            name=f"Sondage créé par {interaction.user.display_name}",
+            name=f"Sondage par {interaction.user.display_name}",
             icon_url=interaction.user.display_avatar.url
         )
         embed.set_footer(text=footer_text)
         
-        # Confirmer la création
+        # Confirmer
         await interaction.response.send_message(
-            f"✅ Sondage créé avec succès !{f' ⏱️ Auto-suppression dans {duree_minutes} min' if duree_minutes else ''}",
+            f"✅ Sondage créé !{f' ⏱️ Suppression auto dans {duree_minutes} min' if duree_minutes else ''}",
             ephemeral=True
         )
         
-        # Créer la vue avec bouton admin
+        # Créer vue avec bouton admin
         view = SondageView()
         
-        # Envoyer le sondage dans le canal
+        # Envoyer le sondage
         message = await interaction.channel.send(embed=embed, view=view)
         
-        # Ajouter les réactions pour voter
+        # Ajouter les réactions
         for i in range(len(options)):
             await message.add_reaction(emojis[i])
         
@@ -226,7 +216,7 @@ class SondageView(View):
         total_votes = 0
         
         for reaction in message.reactions:
-            if str(reaction.emoji) in ["🅰️", "🅱️", "🅲", "🅳"]:
+            if str(reaction.emoji) in ["🅰️", "🅱️", "🅲"]:
                 users = [user async for user in reaction.users() if not user.bot]
                 if users:
                     total_votes += len(users)

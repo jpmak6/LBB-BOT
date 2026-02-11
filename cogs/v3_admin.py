@@ -417,6 +417,51 @@ class AdminV3(commands.Cog):
             await msg.delete()
         except:
             pass
+    
+    @commands.command(name="test_rappel")
+    async def test_rappel(self, ctx):
+        """Tester le rappel des salades immédiatement (Admin uniquement)"""
+        
+        # VÉRIFICATION WHITELIST
+        if not est_admin(ctx.author.id):
+            try:
+                await ctx.message.delete()
+            except:
+                pass
+            return
+        
+        # Supprimer la commande
+        try:
+            await ctx.message.delete()
+        except:
+            pass
+        
+        # Trouver le salon #🎭︱・responsables
+        channel = discord.utils.get(ctx.guild.text_channels, name="🎭︱・responsables")
+        
+        if not channel:
+            await ctx.send("❌ Salon `#🎭︱・responsables` introuvable.", delete_after=5)
+            return
+        
+        # Envoyer le rappel
+        embed = discord.Embed(
+            title="🥗 RAPPEL – COMMANDES SALADES",
+            description=(
+                "Bonjour à tous,\n"
+                "Petit rappel pour penser à commander les salades pour la semaine.\n\n"
+                "Merci 🙏\n"
+                "— Matteo"
+            ),
+            color=discord.Color.green(),
+            timestamp=datetime.now()
+        )
+        embed.set_footer(text="🧪 Test du rappel automatique")
+        
+        await channel.send(embed=embed)
+        
+        # Confirmer à l'admin
+        await ctx.send(f"✅ Rappel de test envoyé dans {channel.mention}", delete_after=5)
+        logger.info(f"🧪 Test rappel salades envoyé par {ctx.author.name}")
 
 async def setup(bot):
     await bot.add_cog(AdminV3(bot))

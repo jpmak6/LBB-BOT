@@ -20,11 +20,11 @@ def est_admin(user_id: int) -> bool:
     return user_id in ADMINS_AUTORISES
 
 # ============================================
-# SONDAGE V3.1 - ULTRA SIMPLE
+# SONDAGE V3.1 - AVEC DURÉE AUTO-SUPPRESSION
 # ============================================
 
 class SondageModal(Modal):
-    """Modal pour créer un sondage professionnel"""
+    """Modal pour créer un sondage professionnel avec durée"""
     def __init__(self):
         super().__init__(title="📊 Créer un Sondage")
         
@@ -36,6 +36,15 @@ class SondageModal(Modal):
             max_length=200
         )
         self.add_item(self.question)
+        
+        self.duree = TextInput(
+            label="⏱️ Durée du sondage (en minutes)",
+            placeholder="Exemple : 60 (laisse vide pour illimité)",
+            style=discord.TextStyle.short,
+            required=False,
+            max_length=5
+        )
+        self.add_item(self.duree)
         
         self.option1 = TextInput(
             label="🅰️ Option 1",
@@ -79,6 +88,73 @@ class SondageModal(Modal):
         if self.option3.value:
             options.append(self.option3.value)
         if self.option4.value:
+            options.append(self.option4.value)
+        
+        # Gérer la durée
+        duree_minutes = None
+        if self.duree.value:
+            try:
+                duree_minutes = int(self.duree.value)
+                if duree_minutes <= 0:
+                    await interaction.response.send_message(
+                        "❌ La durée doit être supérieure à 0 minutes.",
+                        ephemeral=True
+                    )
+                    return
+            except ValueError:
+                await interaction.response.send_message(
+                    "❌ Durée invalide. Entre un nombre de minutes.",
+                    ephemeral=True
+                )
+                return
+        
+        # Emojis pour les votes
+        emojis = ["🅰️", "🅱️", "🅲", "🅳"]
+        
+        # Footer avec durée
+        footer_text = "👆 Votez en cliquant sur les réactions"
+        if duree_minutes:
+            footer_text += f" • ⏱️ Expire dans {duree_minutes} min"
+        
+        # Créer l'embed du sondage
+        embed = discord.Embed(
+            title="📊 SONDAGE",
+            description=f"**{self.question.value}**\n\n" + "\n".join([
+                f"{emojis[i]} **{opt}**" for i, opt in enumerate(options)
+            ]),
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        embed.set_author(
+            name=f"Sondage créé par {interaction.user.display_name}",
+            icon_url=interaction.user.display_avatar.url
+        )
+        embed.set_footer(text=footer_text)
+        
+        # Confirmer la création
+        await interaction.response.send_message(
+            f"✅ Sondage créé avec succès !{f' ⏱️ Auto-suppression dans {duree_minutes} min' if duree_minutes else ''}",
+            ephemeral=True
+        )
+        
+        # Créer la vue avec bouton admin
+        view = SondageView()
+        
+        # Envoyer le sondage dans le canal
+        message = await interaction.channel.send(embed=embed, view=view)
+        
+        # Ajouter les réactions pour voter
+        for i in range(len(options)):
+            await message.add_reaction(emojis[i])
+        
+        # Auto-suppression si durée définie
+        if duree_minutes:
+            await asyncio.sleep(duree_minutes * 60)
+            try:
+                await message.delete()
+                logger.info(f"🗑️ Sondage auto-supprimé après {duree_minutes} min")
+            except:
+                pass
             options.append(self.option4.value)
         
         # Emojis pour les votes
@@ -173,13 +249,70 @@ class SondageView(View):
         await interaction.response.send_message(embed=embed, ephemeral=True)
 
 # ============================================
-# EMBED V3.1 - ULTRA SIMPLE
+# PANEL ADMIN EMBED - PROFESSIONNEL & COMPLET
 # ============================================
 
-class EmbedModal(Modal):
-    """Modal pour créer un embed professionnel sans coder"""
+class EmbedPanelView(View):
+    """Panel de contrôle professionnel pour créer des embeds"""
     def __init__(self):
-        super().__init__(title="✨ Créer un Message Embed")
+        super().__init__(timeout=None)
+    
+    @discord.ui.button(
+        label="✨ Créer un Embed",
+        style=discord.ButtonStyle.primary,
+        custom_id="embed_create_v3",
+        emoji="✨",
+        row=0
+    )
+    async def creer_embed(self, interaction: discord.Interaction, button: Button):
+        if not est_admin(interaction.user.id):
+            await interaction.response.send_message("❌ Accès refusé", ephemeral=True)
+            return
+        await interaction.response.send_modal(EmbedModal())
+    
+    @discord.ui.button(
+        label="Annonce Simple",
+        style=discord.ButtonStyle.success,
+        custom_id="embed_annonce_v3",
+        emoji="📢",
+        row=0
+    )
+    async def annonce_simple(self, interaction: discord.Interaction, button: Button):
+        if not est_admin(interaction.user.id):
+            await interaction.response.send_message("❌ Accès refusé", ephemeral=True)
+            return
+        await interaction.response.send_modal(AnnonceModal())
+    
+    @discord.ui.button(
+        label="Info / Rappel",
+        style=discord.ButtonStyle.secondary,
+        custom_id="embed_info_v3",
+        emoji="ℹ️",
+        row=1
+    )
+    async def info_rappel(self, interaction: discord.Interaction, button: Button):
+        if not est_admin(interaction.user.id):
+            await interaction.response.send_message("❌ Accès refusé", ephemeral=True)
+            return
+        await interaction.response.send_modal(InfoModal())
+    
+    @discord.ui.button(
+        label="Alerte / Urgent",
+        style=discord.ButtonStyle.danger,
+        custom_id="embed_alerte_v3",
+        emoji="⚠️",
+        row=1
+    )
+    async def alerte_urgent(self, interaction: discord.Interaction, button: Button):
+        if not est_admin(interaction.user.id):
+            await interaction.response.send_message("❌ Accès refusé", ephemeral=True)
+            return
+        await interaction.response.send_modal(AlerteModal())
+
+class EmbedModal(Modal):
+    """Modal complet pour créer un embed personnalisé"""
+    def __init__(self):
+        super().__init__(title="✨ Créer un Embed Personnalisé")
         
         self.titre = TextInput(
             label="📌 Titre de l'embed",
@@ -192,7 +325,7 @@ class EmbedModal(Modal):
         
         self.description = TextInput(
             label="📝 Description / Message",
-            placeholder="Exemple : Réunion mercredi à 14h dans la salle 2...",
+            placeholder="Ton message ici...",
             style=discord.TextStyle.paragraph,
             required=True,
             max_length=4000
@@ -200,25 +333,77 @@ class EmbedModal(Modal):
         self.add_item(self.description)
         
         self.couleur = TextInput(
-            label="🎨 Couleur (bleu/rouge/vert/jaune/violet/orange)",
-            placeholder="Exemple : bleu",
+            label="🎨 Couleur (bleu/rouge/vert/jaune/violet/orange/rose)",
+            placeholder="bleu",
             style=discord.TextStyle.short,
             required=False,
             max_length=20
         )
         self.add_item(self.couleur)
         
-        self.footer = TextInput(
-            label="📄 Texte en bas (optionnel)",
-            placeholder="Exemple : Direction SIMON&CO",
+        self.image_url = TextInput(
+            label="🖼️ URL Image (optionnel)",
+            placeholder="https://...",
             style=discord.TextStyle.short,
             required=False,
-            max_length=100
+            max_length=500
         )
-        self.add_item(self.footer)
+        self.add_item(self.image_url)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        # Couleurs disponibles
+        couleurs = {
+            "bleu": discord.Color.blue(),
+            "rouge": discord.Color.red(),
+            "vert": discord.Color.green(),
+            "jaune": discord.Color.gold(),
+            "violet": discord.Color.purple(),
+            "orange": discord.Color.orange(),
+            "rose": discord.Color.magenta(),
+        }
+        
+        couleur = couleurs.get(self.couleur.value.lower().strip() if self.couleur.value else "", discord.Color.blue())
+        
+        # Créer l'embed
+        embed = discord.Embed(
+            title=self.titre.value,
+            description=self.description.value,
+            color=couleur,
+            timestamp=datetime.now()
+        )
+        
+        embed.set_author(
+            name=interaction.user.display_name,
+            icon_url=interaction.user.display_avatar.url
+        )
+        
+        if self.image_url.value:
+            try:
+                embed.set_image(url=self.image_url.value)
+            except:
+                pass
+        
+        embed.set_footer(text="SIMON&CO")
+        
+        await interaction.response.send_message("✅ Embed créé !", ephemeral=True)
+        await interaction.channel.send(embed=embed)
+
+class AnnonceModal(Modal):
+    """Modal pour annonce rapide"""
+    def __init__(self):
+        super().__init__(title="📢 Annonce Simple")
+        
+        self.message = TextInput(
+            label="📢 Ton annonce",
+            placeholder="Exemple : Réunion demain à 14h...",
+            style=discord.TextStyle.paragraph,
+            required=True,
+            max_length=2000
+        )
+        self.add_item(self.message)
         
         self.mention = TextInput(
-            label="📢 Mentionner @everyone ? (oui/non)",
+            label="🔔 Mentionner @everyone ? (oui/non)",
             placeholder="non",
             style=discord.TextStyle.short,
             required=False,
@@ -227,55 +412,91 @@ class EmbedModal(Modal):
         self.add_item(self.mention)
     
     async def on_submit(self, interaction: discord.Interaction):
-        # Définir la couleur
-        couleurs = {
-            "bleu": discord.Color.blue(),
-            "rouge": discord.Color.red(),
-            "vert": discord.Color.green(),
-            "jaune": discord.Color.gold(),
-            "violet": discord.Color.purple(),
-            "orange": discord.Color.orange(),
-        }
-        
-        couleur_choisie = couleurs.get(
-            self.couleur.value.lower().strip() if self.couleur.value else "",
-            discord.Color.blue()
-        )
-        
-        # Créer l'embed
         embed = discord.Embed(
-            title=self.titre.value,
-            description=self.description.value,
-            color=couleur_choisie,
+            title="📢 ANNONCE",
+            description=self.message.value,
+            color=discord.Color.blue(),
             timestamp=datetime.now()
         )
+        embed.set_footer(text=f"Par {interaction.user.display_name}")
         
-        # Ajouter l'auteur
-        embed.set_author(
-            name=interaction.user.display_name,
-            icon_url=interaction.user.display_avatar.url
-        )
+        mention = self.mention.value and self.mention.value.lower() in ["oui", "yes", "o", "y"]
         
-        # Ajouter le footer si spécifié
-        if self.footer.value:
-            embed.set_footer(text=self.footer.value)
-        else:
-            embed.set_footer(text="SIMON&CO")
-        
-        # Envoyer l'embed dans le canal
-        mention_everyone = self.mention.value and self.mention.value.lower() in ["oui", "yes", "o", "y"]
-        
-        # Confirmer à l'utilisateur
-        await interaction.response.send_message(
-            "✅ Embed créé avec succès !",
-            ephemeral=True
-        )
-        
-        # Envoyer l'embed dans le canal
+        await interaction.response.send_message("✅ Annonce publiée !", ephemeral=True)
         await interaction.channel.send(
-            content="@everyone" if mention_everyone else None,
+            content="@everyone" if mention else None,
             embed=embed
         )
+
+class InfoModal(Modal):
+    """Modal pour info/rappel"""
+    def __init__(self):
+        super().__init__(title="ℹ️ Information / Rappel")
+        
+        self.titre = TextInput(
+            label="ℹ️ Titre",
+            placeholder="Exemple : Rappel Important",
+            style=discord.TextStyle.short,
+            required=True,
+            max_length=200
+        )
+        self.add_item(self.titre)
+        
+        self.message = TextInput(
+            label="📝 Message",
+            placeholder="Ton information...",
+            style=discord.TextStyle.paragraph,
+            required=True,
+            max_length=2000
+        )
+        self.add_item(self.message)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title=f"ℹ️ {self.titre.value}",
+            description=self.message.value,
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
+        )
+        embed.set_footer(text="SIMON&CO")
+        
+        await interaction.response.send_message("✅ Info publiée !", ephemeral=True)
+        await interaction.channel.send(embed=embed)
+
+class AlerteModal(Modal):
+    """Modal pour alerte urgente"""
+    def __init__(self):
+        super().__init__(title="⚠️ Alerte Urgente")
+        
+        self.titre = TextInput(
+            label="⚠️ Titre de l'alerte",
+            placeholder="Exemple : URGENT",
+            style=discord.TextStyle.short,
+            required=True,
+            max_length=200
+        )
+        self.add_item(self.titre)
+        
+        self.message = TextInput(
+            label="🚨 Message urgent",
+            placeholder="Décris l'urgence...",
+            style=discord.TextStyle.paragraph,
+            required=True,
+            max_length=2000
+        )
+        self.add_item(self.message)
+    
+    async def on_submit(self, interaction: discord.Interaction):
+        embed = discord.Embed(
+            title=f"🚨 {self.titre.value}",
+            description=self.message.value,
+            color=discord.Color.red(),
+            timestamp=datetime.now()
+        )
+        embed.set_footer(text="⚠️ Alerte SIMON&CO")
+        
+        await interaction.response.send_message("✅ Alerte envoyée !", ephemeral=True)
+        await interaction.channel.send(content="@everyone", embed=embed)
 
 # ============================================
 # COG PRINCIPAL V3.1
@@ -376,8 +597,8 @@ class AdminV3(commands.Cog):
             pass
     
     @commands.command(name="embed")
-    async def embed(self, ctx):
-        """Créer un message embed personnalisé (Admin SIMON&CO uniquement)"""
+    async def embed_panel(self, ctx):
+        """Ouvrir le panel de création d'embeds professionnel (Admin uniquement)"""
         
         # VÉRIFICATION WHITELIST
         if not est_admin(ctx.author.id):
@@ -387,36 +608,38 @@ class AdminV3(commands.Cog):
                 pass
             return
         
-        # Supprimer la commande pour discrétion
+        # Supprimer la commande
         try:
             await ctx.message.delete()
         except:
             pass
         
-        # Créer un bouton pour ouvrir le modal
-        view = View(timeout=60)
-        button = Button(label="✨ Créer l'embed", style=discord.ButtonStyle.success)
-        
-        async def button_callback(interaction: discord.Interaction):
-            if not est_admin(interaction.user.id):
-                await interaction.response.send_message("❌ Accès refusé", ephemeral=True)
-                return
-            await interaction.response.send_modal(EmbedModal())
-        
-        button.callback = button_callback
-        view.add_item(button)
-        
-        msg = await ctx.send(
-            f"✅ {ctx.author.mention} Clique sur le bouton ci-dessous pour créer ton embed :",
-            view=view
+        # Créer l'embed du panel
+        embed = discord.Embed(
+            title="✨ PANEL DE CRÉATION EMBED",
+            description=(
+                "**Bienvenue dans le panel professionnel de création d'embeds !**\n\n"
+                "🎨 Choisis le type de message que tu veux créer :\n\n"
+                "**✨ Créer un Embed** - Embed personnalisé complet\n"
+                "**📢 Annonce Simple** - Message d'annonce rapide\n"
+                "**ℹ️ Info / Rappel** - Information ou rappel standard\n"
+                "**⚠️ Alerte / Urgent** - Message urgent avec @everyone\n\n"
+                "━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            ),
+            color=discord.Color.blue(),
+            timestamp=datetime.now()
         )
+        embed.set_author(
+            name=f"Panel Admin • {ctx.author.display_name}",
+            icon_url=ctx.author.display_avatar.url
+        )
+        embed.set_footer(text="🔒 Réservé aux administrateurs SIMON&CO")
         
-        # Supprimer le message après 60 secondes
-        await asyncio.sleep(60)
-        try:
-            await msg.delete()
-        except:
-            pass
+        # Créer la vue persistante
+        view = EmbedPanelView()
+        
+        # Envoyer le panel
+        await ctx.send(embed=embed, view=view)
     
     @commands.command(name="test_rappel")
     async def test_rappel(self, ctx):
@@ -465,5 +688,6 @@ class AdminV3(commands.Cog):
 
 async def setup(bot):
     await bot.add_cog(AdminV3(bot))
-    # Enregistrer la vue persistante pour les sondages
+    # Enregistrer les vues persistantes
     bot.add_view(SondageView())
+    bot.add_view(EmbedPanelView())

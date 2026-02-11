@@ -61,7 +61,7 @@ async def on_ready():
     
     # Ré-enregistrer les Views persistantes pour que les boutons fonctionnent après redémarrage
     from cogs.simple import PanelDemande, PanelMaintenance, TicketControlView, TicketConfirmView, TicketFinalActionsView, AdminPanelView
-    from cogs.v3_admin import SondageView
+    from cogs.v3_admin import SondageView, EmbedPanelView
     
     bot.add_view(PanelDemande())
     bot.add_view(PanelMaintenance())
@@ -70,7 +70,8 @@ async def on_ready():
     bot.add_view(TicketFinalActionsView())
     bot.add_view(AdminPanelView())
     bot.add_view(SondageView())
-    logger.info("✅ Tous les boutons persistants ré-enregistrés (V2 + V3.1)")
+    bot.add_view(EmbedPanelView())
+    logger.info("✅ Tous les boutons persistants ré-enregistrés (V2 + V3.1 Pro)")
     
     # Définir l'activité du bot
     await bot.change_presence(

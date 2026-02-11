@@ -1,8 +1,11 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 from discord.ui import Button, View, Modal, TextInput
-from datetime import datetime
+from datetime import datetime, time
 import asyncio
+import logging
+
+logger = logging.getLogger('discord')
 
 # ============================================
 # WHITELIST ULTRA-STRICTE - V3.1
@@ -283,6 +286,42 @@ class AdminV3(commands.Cog):
     
     def __init__(self, bot):
         self.bot = bot
+        self.rappel_salades.start()  # Démarrer la tâche automatique
+    
+    def cog_unload(self):
+        """Arrêter la tâche quand le cog est déchargé"""
+        self.rappel_salades.cancel()
+    
+    @tasks.loop(time=time(hour=8, minute=0))  # Tous les jours à 8h00
+    async def rappel_salades(self):
+        """Envoyer un rappel pour les salades tous les lundis à 8h"""
+        # Vérifier si c'est lundi (0 = lundi)
+        if datetime.now().weekday() != 0:
+            return
+        
+        # Trouver le salon #🎭︱・responsables
+        for guild in self.bot.guilds:
+            channel = discord.utils.get(guild.text_channels, name="🎭︱・responsables")
+            if channel:
+                embed = discord.Embed(
+                    title="🥗 RAPPEL – COMMANDES SALADES",
+                    description=(
+                        "Bonjour à tous,\n"
+                        "Petit rappel pour penser à commander les salades pour la semaine.\n\n"
+                        "Merci 🙏\n"
+                        "— Matteo"
+                    ),
+                    color=discord.Color.green(),
+                    timestamp=datetime.now()
+                )
+                await channel.send(embed=embed)
+                logger.info(f"✅ Rappel salades envoyé dans #{channel.name}")
+                break
+    
+    @rappel_salades.before_loop
+    async def before_rappel_salades(self):
+        """Attendre que le bot soit prêt avant de démarrer la tâche"""
+        await self.bot.wait_until_ready()
     
     @commands.command(name="sondage")
     async def sondage(self, ctx):

@@ -135,7 +135,8 @@ async def on_member_remove(member):
 async def on_command_error(ctx, error):
     """Gestion globale des erreurs"""
     if isinstance(error, commands.CommandNotFound):
-        await ctx.send("❌ Commande inconnue. Tape `!aide` pour voir les commandes disponibles.")
+        # Ignorer silencieusement les commandes inconnues (V3.1 - accès restreint)
+        return
     elif isinstance(error, commands.MissingPermissions):
         await ctx.send("❌ Tu n'as pas la permission d'utiliser cette commande.")
     elif isinstance(error, commands.MissingRequiredArgument):

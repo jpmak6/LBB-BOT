@@ -433,6 +433,11 @@ class InfoModal(Modal):
             placeholder="Ton information...",
             style=discord.TextStyle.paragraph,
             required=True,
+            max_length=2000
+        )
+        self.add_item(self.message)
+    
+    async def on_submit(self, interaction: discord.Interaction):
         try:
             embed = discord.Embed(
                 title=f"ℹ️ {self.titre.value}",
@@ -443,6 +448,11 @@ class InfoModal(Modal):
             embed.set_footer(text="SIMON&CO")
             
             await interaction.response.send_message("✅ Info publiée !", ephemeral=True)
+            await interaction.channel.send(embed=embed)
+            logger.info(f"✅ Info créée par {interaction.user.name}")
+        except Exception as e:
+            logger.error(f"❌ Erreur info: {e}")
+            await interaction.response.send_message(f"❌ Erreur: {e}", ephemeral=True)
             await interaction.channel.send(embed=embed)
             logger.info(f"✅ Info créée par {interaction.user.name}")
         except Exception as e:

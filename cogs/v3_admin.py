@@ -530,6 +530,10 @@ class AdminV3(commands.Cog):
         for guild in self.bot.guilds:
             channel = discord.utils.get(guild.text_channels, name="🎭︱・responsables")
             if channel:
+                # Chercher le rôle @responsable
+                role = discord.utils.get(guild.roles, name="responsable")
+                mention = f"<@&{role.id}>" if role else "@responsable"
+                
                 embed = discord.Embed(
                     title="🥗 RAPPEL – COMMANDES SALADES",
                     description=(
@@ -541,8 +545,8 @@ class AdminV3(commands.Cog):
                     color=discord.Color.green(),
                     timestamp=datetime.now()
                 )
-                await channel.send(embed=embed)
-                logger.info(f"✅ Rappel salades envoyé dans #{channel.name}")
+                await channel.send(content=mention, embed=embed)
+                logger.info(f"✅ Rappel salades envoyé dans #{channel.name} avec mention {mention}")
                 break
     
     @rappel_salades.before_loop

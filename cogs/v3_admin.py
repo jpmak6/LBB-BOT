@@ -537,6 +537,7 @@ class AdminV3(commands.Cog):
                 embed = discord.Embed(
                     title="🥗 RAPPEL – COMMANDES SALADES",
                     description=(
+                        f"{mention}\n\n"
                         "Bonjour à tous,\n"
                         "Petit rappel pour penser à commander les salades pour la semaine.\n\n"
                         "Merci 🙏\n"
@@ -545,7 +546,7 @@ class AdminV3(commands.Cog):
                     color=discord.Color.green(),
                     timestamp=datetime.now()
                 )
-                await channel.send(content=mention, embed=embed)
+                await channel.send(embed=embed)
                 logger.info(f"✅ Rappel salades envoyé dans #{channel.name} avec mention {mention}")
                 break
     

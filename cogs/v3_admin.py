@@ -685,7 +685,7 @@ class AdminV3(commands.Cog):
                 "Bonjour à tous,\n"
                 "Petit rappel pour penser à commander les salades pour la semaine.\n\n"
                 "Merci 🙏\n"
-                "— Matteo"
+                "— responsable SIMON&CO"
             ),
             color=discord.Color.green(),
             timestamp=datetime.now()

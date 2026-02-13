@@ -538,6 +538,7 @@ class AdminV3(commands.Cog):
                     title="🥗 RAPPEL – COMMANDES SALADES",
                     description=(
                         f"{mention}\n\n"
+                        "@responsable"
                         "Bonjour à tous,\n"
                         "Petit rappel pour penser à commander les salades pour la semaine.\n\n"
                         "Merci 🙏\n"
